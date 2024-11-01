@@ -5,3 +5,5 @@
 *.out
 *.dat
 .vscode
+*.s
+*.cfg
