@@ -199,7 +199,6 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                         appendList(segWriteRes, &writeAddr, 2);
                         if (wordSize == 1) {((SegmentDef*)(node->dataptr))->writeAddr /= 2;}
                     }
-                    readLocalVars(handle, errorList, handleList, segments, macroDefs, varDefs, defines, wordSize, tempMacroVars, activeSeg, lineCount + 1, includeStack, ifStack, segStack, macroStack);
                     Node* nodei = segWriteRes->head;
                     for (Node* nodej = segments->head; nodej != NULL; nodej = nodej->next) {
                         uint16_t writeAddr = *(uint16_t*)(nodei->dataptr);
@@ -219,7 +218,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     InstData* instData = readStringTable(instTable, name, strlen(name) + 1);
                     if (instData == NULL) {
                         char* errorStr = (char*)malloc((23 + strlen(name)) * sizeof(char));
-                        sprintf(errorStr, "Invalid instruction %s", name);
+                        sprintf(errorStr, "Invalid instruction: %s", name);
                         ErrorData errorData = {errorStr, lineCount, i, strlen(name), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));
                         free(name);
@@ -235,7 +234,6 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                         char* expr = *(char**)(node->dataptr);
                         ExprErrorShort exprOut = evalShortExpr(expr, strlen(expr), varDefs, defines);
                         if (exprOut.errorMessage == NULL) {
-                            printf("%s\n", expr);
                             appendList(argEvals, &(exprOut.val), 2);
                         } else if (args->size >= 1 && !isValidLineEnding(expr, strlen(expr) + 1)) {
                             hasError = 1;
@@ -294,7 +292,13 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                             ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                             appendList(errorList, &errorData, sizeof(ErrorData));
                         }
-                        if (arg2 > 15) {
+                        if (instData->type == imm && arg2 > 255) {
+                            hasError = 1;
+                            char* errorStr = (char*)malloc(49 * sizeof(char));
+                            sprintf(errorStr, "Argument 2 exceeds range -128 to 127 or 0 to 255");
+                            ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
+                            appendList(errorList, &errorData, sizeof(ErrorData));
+                        } else if (instData->type != imm && arg2 > 15) {
                             hasError = 1;
                             char* errorStr = (char*)malloc(33 * sizeof(char));
                             sprintf(errorStr, "Argument 2 exceeds range 0 to 15");

@@ -43,7 +43,7 @@ prints version information
 */
 void printVersion() {
     printf("  -- Assembler for CS/ECE 3710 --\n");
-    printf("    Version 1.0.6\n");
+    printf("    Version 1.0.7\n");
     printf("    Written by Adam Billings\n\n");
     printf("    Happy programming!\n\n");
 }
@@ -629,11 +629,10 @@ int main(int argc, char* argv[]) {
             if (output == NULL) {
                 printf("\e[1,31mERROR:\e[0m could not open output file\n\n");
             } else {
+                fpos_t pos = 0;
                 for (Node* node = segments->head; node != NULL; node = node->next) {
                     SegmentDef* seg = (SegmentDef*)(node->dataptr);
                     if (seg->align > 1) {
-                        fpos_t pos;
-                        fgetpos(output, &pos);
                         if (wordSize == 1) {pos /= 2;}
                         uint16_t buffer = seg->align - (pos % seg->align);
                         if (buffer == seg->align) {buffer = 0;}
@@ -646,12 +645,11 @@ int main(int argc, char* argv[]) {
                                 else {fprintf(output, "00 ");}
                             } else {fwrite(&zero, 1, 1, output);}
                         }
+                        pos += buffer * (wordSize == 1 ? 2 : 1);
                     }
                     if (seg->accessType != bss) {
                         if (seg->fill) {
                             if (isHex) {
-                                fpos_t pos;
-                                fgetpos(output, &pos);
                                 for (int i = 0; i < seg->size * (wordSize == 1 ? 2 : 1); i++) {
                                     int linePos = (pos + i) % 16;
                                     if (linePos == 15) {fprintf(output, "%02x\n", seg->outputArr[i]);}
@@ -659,10 +657,9 @@ int main(int argc, char* argv[]) {
                                     else {fprintf(output, "%02x ", seg->outputArr[i]);}
                                 }
                             } else {fwrite(seg->outputArr, 1, seg->size * (wordSize == 1 ? 2 : 1), output);}
+                            pos += seg->size * (wordSize == 1 ? 2 : 1);
                         } else {
                             if (isHex) {
-                                fpos_t pos;
-                                fgetpos(output, &pos);
                                 for (int i = 0; i < seg->writeAddr; i++) {
                                     int linePos = (pos + i) % 16;
                                     if (linePos == 15) {fprintf(output, "%02x\n", seg->outputArr[i]);}
@@ -670,6 +667,7 @@ int main(int argc, char* argv[]) {
                                     else {fprintf(output, "%02x ", seg->outputArr[i]);}
                                 }
                             } else {fwrite(seg->outputArr, 1, seg->writeAddr, output);}
+                            pos += seg->writeAddr;
                         }
                     }
                 }
