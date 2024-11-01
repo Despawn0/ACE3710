@@ -88,7 +88,8 @@ int main(int argc, char* argv[]) {
             printHelp();
             return 0;
         }
-        else if (!strcmp(argv[i], "--text")) {isHex = 1; continue;}
+        else if (!strcmp(argv[i], "--text-byte")) {isHex = 1; continue;}
+        else if (!strcmp(argv[i], "--text-word")) {isHex = 2; continue;}
         else if (!strcmp(argv[i], "--raw")) {isHex = 0; continue;}
         else if (!strcmp(argv[i], "--config")) {
             if (hasConfig) {
@@ -338,6 +339,7 @@ int main(int argc, char* argv[]) {
                         return 0;
                     }
                     else if (argv[i][j] == 't') {isHex = 1; continue;}
+                    else if (argv[i][j] == 'T') {isHex = 2; continue;}
                     else if (argv[i][j] == 'r') {isHex = 0; continue;}
                     else if (argv[i][j] == 'c') {
                         if (hasConfig) {
@@ -638,11 +640,16 @@ int main(int argc, char* argv[]) {
                         if (buffer == seg->align) {buffer = 0;}
                         const uint8_t zero = 0;
                         for (int i = 0; i < buffer * (wordSize == 1 ? 2 : 1); i++) {
-                            if (isHex) {
+                            if (isHex == 1) {
                                 int linePos = (pos + i) % 16;
                                 if (linePos == 15) {fprintf(output, "00\n");}
                                 else if (linePos == 7) {fprintf(output, "00  ");}
                                 else {fprintf(output, "00 ");}
+                            } else if (isHex == 2 && (i & 0x0001)) {
+                                int linePos = (pos + i / 2) % 16;
+                                if (linePos == 15) {fprintf(output, "0000\n");}
+                                else if (linePos == 7) {fprintf(output, "0000  ");}
+                                else {fprintf(output, "0000 ");}
                             } else {fwrite(&zero, 1, 1, output);}
                         }
                         pos += buffer * (wordSize == 1 ? 2 : 1);
@@ -650,21 +657,57 @@ int main(int argc, char* argv[]) {
                     if (seg->accessType != bss) {
                         if (seg->fill) {
                             if (isHex) {
+                                uint16_t data;
                                 for (int i = 0; i < seg->size * (wordSize == 1 ? 2 : 1); i++) {
-                                    int linePos = (pos + i) % 16;
-                                    if (linePos == 15) {fprintf(output, "%02x\n", seg->outputArr[i]);}
-                                    else if (linePos == 7) {fprintf(output, "%02x  ", seg->outputArr[i]);}
-                                    else {fprintf(output, "%02x ", seg->outputArr[i]);}
+                                    if (isHex == 1) {
+                                        int linePos = (pos + i) % 16;
+                                        if (linePos == 15) {fprintf(output, "%02x\n", seg->outputArr[i]);}
+                                        else if (linePos == 7) {fprintf(output, "%02x  ", seg->outputArr[i]);}
+                                        else {fprintf(output, "%02x ", seg->outputArr[i]);}
+                                    } else {
+                                        if (i == seg->size * (wordSize == 1 ? 2 : 1) - 1 && !(i & 0x0001)) {
+                                            int linePos = (pos + i + 1) % 16;
+                                            if (linePos == 15) {fprintf(output, "%04x\n", seg->outputArr[i]);}
+                                            else if (linePos == 7) {fprintf(output, "%04x  ", seg->outputArr[i]);}
+                                            else {fprintf(output, "%04x ", seg->outputArr[i]);}
+                                        }
+                                        else if (!(i & 0x0001)) {data = isLittleEndian ? seg->outputArr[i] : (seg->outputArr[i] << 8);}
+                                        else {
+                                            data |= isLittleEndian ? (seg->outputArr[i] << 8) : seg->outputArr[i];
+                                            int linePos = (pos + i) % 16;
+                                            if (linePos == 15) {fprintf(output, "%04x\n", data);}
+                                            else if (linePos == 7) {fprintf(output, "%04x  ", data);}
+                                            else {fprintf(output, "%04x ", data);}
+                                        }
+                                    }
                                 }
                             } else {fwrite(seg->outputArr, 1, seg->size * (wordSize == 1 ? 2 : 1), output);}
                             pos += seg->size * (wordSize == 1 ? 2 : 1);
                         } else {
                             if (isHex) {
+                                uint16_t data;
                                 for (int i = 0; i < seg->writeAddr; i++) {
-                                    int linePos = (pos + i) % 16;
-                                    if (linePos == 15) {fprintf(output, "%02x\n", seg->outputArr[i]);}
-                                    else if (linePos == 7) {fprintf(output, "%02x  ", seg->outputArr[i]);}
-                                    else {fprintf(output, "%02x ", seg->outputArr[i]);}
+                                    if (isHex == 1) {
+                                        int linePos = (pos + i) % 16;
+                                        if (linePos == 15) {fprintf(output, "%02x\n", seg->outputArr[i]);}
+                                        else if (linePos == 7) {fprintf(output, "%02x  ", seg->outputArr[i]);}
+                                        else {fprintf(output, "%02x ", seg->outputArr[i]);}
+                                    } else {
+                                        if (i == seg->writeAddr - 1 && !(i & 0x0001)) {
+                                            int linePos = (pos + i + 1) % 16;
+                                            if (linePos == 15) {fprintf(output, "%04x\n", seg->outputArr[i]);}
+                                            else if (linePos == 7) {fprintf(output, "%04x  ", seg->outputArr[i]);}
+                                            else {fprintf(output, "%04x ", seg->outputArr[i]);}
+                                        }
+                                        else if (!(i & 0x0001)) {data = isLittleEndian ? seg->outputArr[i] : (seg->outputArr[i] << 8);}
+                                        else {
+                                            data |= isLittleEndian ? (seg->outputArr[i] << 8) : seg->outputArr[i];
+                                            int linePos = (pos + i) % 16;
+                                            if (linePos == 15) {fprintf(output, "%04x\n", data);}
+                                            else if (linePos == 7) {fprintf(output, "%04x  ", data);}
+                                            else {fprintf(output, "%04x ", data);}
+                                        }
+                                    }
                                 }
                             } else {fwrite(seg->outputArr, 1, seg->writeAddr, output);}
                             pos += seg->writeAddr;

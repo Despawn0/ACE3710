@@ -32,7 +32,8 @@ Written by Adam Billings
       -L, --little-endian          : write output file in little-endian format\n\
       -B, --big-endian             : write output file in big-endian format\n\
       -r, --raw                    : output raw binary\n\
-      -t, --text                   : output hex as text\n\
+      -t, --text-byte              : output hex as text bytes\n\
+      -T, --text-word              : output hex as words\n\
       -o <file>, --output <file>   : set output file name\n\
 \n\
     - Help Pages -\n\
