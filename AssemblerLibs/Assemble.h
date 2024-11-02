@@ -152,6 +152,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
 
                     // define the vars
                     char hasError = 0;
+                    char* errorMessage1;
                     List* args = extractArgs(afterName, strlen(afterName));
                     Node* argNode = args->head;
                     for (Node* node = macroData->vars->head; node != NULL; node = node->next) {
@@ -163,6 +164,10 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                             appendList(macroVars, &name, sizeof(char*));
                             setStringTableValue(varDefs, name, strlen(name) + 1, &val, 2);
                         } else {
+                            if (!hasError) {
+                                errorMessage1 = (char*)malloc((strlen(exprOut.errorMessage) + 1) * sizeof(char));
+                                strcpy(errorMessage1, exprOut.errorMessage);
+                            }
                             free(exprOut.errorMessage);
                             hasError = 1;
                         }
@@ -172,10 +177,11 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     deleteList(args);
                     if (hasError) {
                         char* errorStr = (char*)malloc(26 * sizeof(char));
-                        sprintf(errorStr, "Could not parse arguments");
+                        sprintf(errorStr, "Could not parse arguments: %s", errorMessage1);
                         ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));
                         free(name);
+                        free(errorMessage1);
                         lineCount++;
                         continue;
                     }
@@ -199,6 +205,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                         appendList(segWriteRes, &writeAddr, 2);
                         if (wordSize == 1) {((SegmentDef*)(node->dataptr))->writeAddr /= 2;}
                     }
+                    readLocalVars(handle, errorList, handleList, segments, macroDefs, varDefs, defines, wordSize, tempMacroVars, activeSeg, lineCount + 1, includeStack, ifStack, segStack, macroStack);
                     Node* nodei = segWriteRes->head;
                     for (Node* nodej = segments->head; nodej != NULL; nodej = nodej->next) {
                         uint16_t writeAddr = *(uint16_t*)(nodei->dataptr);
@@ -208,8 +215,10 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     deleteList(segWriteRes);
                     
                     // stitch to macroVars
-                    if (macroVars->tail) {macroVars->tail = tempMacroVars->head;}
-                    if (tempMacroVars->head) {tempMacroVars->head = macroVars->tail;}
+                    if (macroVars->tail) {macroVars->tail->next = tempMacroVars->head;}
+                    if (tempMacroVars->head) {tempMacroVars->head->prev = macroVars->tail;}
+                    macroVars->tail = tempMacroVars->tail;
+                    macroVars->size += tempMacroVars->size;
                     free(tempMacroVars);
 
                     if (errorList->size > errorCount) {break;}
@@ -228,6 +237,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
 
                     // get the args
                     char hasError = 0;
+                    char* errorMessage1;
                     List* args = extractArgs(afterName, strlen(afterName));
                     List* argEvals = newList();
                     for (Node* node = args->head; node != NULL; node = node->next) {
@@ -236,17 +246,22 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                         if (exprOut.errorMessage == NULL) {
                             appendList(argEvals, &(exprOut.val), 2);
                         } else if (args->size >= 1 && !isValidLineEnding(expr, strlen(expr) + 1)) {
+                            if (!hasError) {
+                                errorMessage1 = (char*)malloc((strlen(exprOut.errorMessage) + 1) * sizeof(char));
+                                strcpy(errorMessage1, exprOut.errorMessage);
+                            }
                             hasError = 1;
+                            free(exprOut.errorMessage);
                         }
-                        free(exprOut.errorMessage);
                     }
                     deleteList(args);
                     if (hasError) {
                         char* errorStr = (char*)malloc(26 * sizeof(char));
-                        sprintf(errorStr, "Could not parse arguments");
+                        sprintf(errorStr, "Could not parse arguments: %s", errorMessage1);
                         ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));
                         free(name);
+                        free(errorMessage1);
                         deleteList(argEvals);
                         lineCount++;
                         continue;

@@ -731,7 +731,7 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
             return handle;
         }
 
-        ExprErrorShort exprOut = evalShortExpr(afterName, strlen(afterName), defines, defines);
+        ExprErrorShort exprOut = evalShortExpr(afterName, strlen(afterName), vars, defines);
         if (exprOut.errorMessage != NULL) {
             ErrorData errorData = {exprOut.errorMessage, *lineCount, exprOut.errorPos + (afterName - line) + curCol, exprOut.errorLen, handle};
             appendList(errorList, &errorData, sizeof(ErrorData));
@@ -752,12 +752,11 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
         for (Node* node = args->head; node != NULL; node = node->next){
             char* arg = *(char**)(node->dataptr);
             if (!hasError) {
-                ExprErrorShort exprOut = evalShortExpr(arg, strlen(arg), defines, defines);
+                ExprErrorShort exprOut = evalShortExpr(arg, strlen(arg), vars, defines);
                 if (exprOut.errorMessage != NULL) {
-                    printf("%s\n", afterName);
                     free(exprOut.errorMessage);
                     char* errorStr = (char*)malloc(26 * sizeof(char));
-                    sprintf(errorStr, "Could not parse arguments");
+                    sprintf(errorStr, "Could not parse arguments: %s", exprOut.errorMessage);
                     ErrorData errorData = {errorStr, *lineCount, curCol + 5, strlen(line) - 5, handle};
                     appendList(errorList, &errorData, sizeof(ErrorData));
                     hasError = 1;
@@ -782,11 +781,11 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
         for (Node* node = args->head; node != NULL; node = node->next){
             char* arg = *(char**)(node->dataptr);
             if (!hasError) {
-                ExprErrorShort exprOut = evalShortExpr(arg, strlen(arg), defines, defines);
+                ExprErrorShort exprOut = evalShortExpr(arg, strlen(arg), vars, defines);
                 if (exprOut.errorMessage != NULL) {
                     free(exprOut.errorMessage);
                     char* errorStr = (char*)malloc(26 * sizeof(char));
-                    sprintf(errorStr, "Could not parse arguments");
+                    sprintf(errorStr, "Could not parse arguments: %s", exprOut.errorMessage);
                     ErrorData errorData = {errorStr, *lineCount, curCol + 5, strlen(line) - 5, handle};
                     appendList(errorList, &errorData, sizeof(ErrorData));
                     hasError = 1;
@@ -811,7 +810,7 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
         }
         deleteList(args);
     } else if (!strcmp(macroName, ".align")) {
-        ExprErrorShort exprOut = evalShortExpr(afterName, strlen(afterName), defines, defines);
+        ExprErrorShort exprOut = evalShortExpr(afterName, strlen(afterName), vars, defines);
         if (exprOut.errorMessage != NULL) {
             ErrorData errorData = {exprOut.errorMessage, *lineCount, exprOut.errorPos + (afterName - line) + curCol, exprOut.errorLen, handle};
             appendList(errorList, &errorData, sizeof(ErrorData));

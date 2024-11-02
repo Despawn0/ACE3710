@@ -511,7 +511,11 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
         removeListElement(localVars, 0);
     }
 
-    while (1) {
+    // get the starting macro stack size
+    int startStackSize = macroStack->size;
+
+    // read the current block
+    while (macroStack->size >= startStackSize) {
         // handle new line eof
         fgetpos(handle->fptr, &filePos);
         if (filePos == handle->length) {fgets(line, 256, handle->fptr);}
@@ -696,7 +700,7 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
         }
 
         // don't bother with definitions inside a macro
-        if (macroStack->size > 0) {
+        if (macroStack->size > startStackSize) {
             lineCount++;
             continue;
         }

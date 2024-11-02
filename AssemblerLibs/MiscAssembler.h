@@ -66,6 +66,11 @@ void printError(ErrorData errorData) {
         lineBuffer[lineSize - 1] = '\0';
     }
 
+    // replace '\t' with ' '
+    for (int i = 0; i < lineSize; i++) {
+        if (lineBuffer[i] == '\t') {lineBuffer[i] = ' ';}
+    }
+
     // print the message
     printf("\e[1m\e[31mERROR:\e[0;1m %s\e[0m\n", errorData.handle->name);
     printf("  %d |\t%s\n", errorData.line + 1, lineBuffer);
