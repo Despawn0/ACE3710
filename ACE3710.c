@@ -746,6 +746,7 @@ int main(int argc, char* argv[]) {
     deleteList(macroDeleteTracker);
 
     // print all errors
+    printf("made it to errors\n");
     int hasError = errorList->size;
     for (Node* node = errorList->head; node != NULL; node = node->next) {
         ErrorData errorData = *(ErrorData*)(node->dataptr);

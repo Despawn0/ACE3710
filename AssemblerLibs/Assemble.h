@@ -176,7 +176,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     }
                     deleteList(args);
                     if (hasError) {
-                        char* errorStr = (char*)malloc(26 * sizeof(char));
+                        char* errorStr = (char*)malloc(26 * sizeof(char) + strlen(errorMessage1) * sizeof(char));
                         sprintf(errorStr, "Could not parse arguments: %s", errorMessage1);
                         ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));
@@ -256,7 +256,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     }
                     deleteList(args);
                     if (hasError) {
-                        char* errorStr = (char*)malloc(26 * sizeof(char));
+                        char* errorStr = (char*)malloc(26 * sizeof(char) + strlen(errorMessage1) * sizeof(char));
                         sprintf(errorStr, "Could not parse arguments: %s", errorMessage1);
                         ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));
