@@ -22,7 +22,7 @@ Written by Adam Billings
       .elseifndef <define>                  : else include code if not defined\n\
       .else                                 : else include code\n\
       .endif                                : end .if-.elseif-.else chain\n\
-      .macro <param>, <param>, ...          : define a macro (psudoinstruction)\n\
+      .macro <param>, <param>, ...          : define a macro (pseudoinstruction)\n\
       .endmacro                             : end macro definition\n\
       .define <define> <expression>         : define a constant\n\
       .redef <define> <expression>          : redefine a constant\n\
