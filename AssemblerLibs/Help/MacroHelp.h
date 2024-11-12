@@ -31,15 +31,15 @@ Written by Adam Billings
       .res <expression>                     : reserve <expression> addresses\n\
       .byte <expression>, <expression>, ... : write byte(s)\n\
       .word <expression>, <expression>, ... : write word(s)\n\
-      .ascii \"<string>\"                     : write string\n\
-      .asciiz \"<string>\"                    : write zero-terminated string\n\
-      .segment \"<segment_name>\"             : change to <segment_name>\n\
+      .ascii \"<string>\"                   : write string\n\
+      .asciiz \"<string>\"                  : write zero-terminated string\n\
+      .segment \"<segment_name>\"           : change to <segment_name>\n\
       .pushseg                              : push segment\n\
       .popseg                               : pop segment\n\
-      .include \"<file_name>\"                : include code from file\n\
-      .incbin \"<file_name>\"                 : include raw binary from file\n\
-      .warning \"<string>\"                   : assembler warning\n\
-      .error \"<string>\"                     : assembler error\n\
+      .include \"<file_name>\"              : include code from file\n\
+      .incbin \"<file_name>\"               : include raw binary from file\n\
+      .warning \"<string>\"                 : assembler warning\n\
+      .error \"<string>\"                   : assembler error\n\
 \n\
   Note: expressions can only referenced macro-defined values.\n\
 \n\
