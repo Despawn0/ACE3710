@@ -34,7 +34,7 @@ Written by Adam Billings
       \e[36m.include \e[35m\"outsideFile.s\"\n\
       \e[36m.incbin \e[35m\"binaryFile\"\n\
       \n\
-      \e[32m; define a psudoinstruction\n\
+      \e[32m; define a pseudoinstruction\n\
       \e[36m.macro \e[34mrshi\e[0m shAmt, rDst\n\
         \e[34mlsh\e[0m -shAmt, rDst\n\
       \e[36m.endmacro\n\
