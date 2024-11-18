@@ -39,7 +39,7 @@ Written by Adam Billings
       ashu <Rsrc>, <Rdest>   : arithmetic bitshift <Rdest> left by <Rsrc>\n\
       ashui <imm>, <Rdest>   : arithmetic bitshift <Rdest> left by <imm>\n\
       lui <imm>, <Rdest>     : load upper immediate <imm> into <Rdest>\n\
-      load <Rsrc>, <Raddr>   : load from address <Raddr> into <Rdesr>\n\
+      load <Rdest>, <Raddr>  : load from address <Raddr> into <Rdest>\n\
       stor <Rsrc>, <Raddr>   : store <Rsrc> into address <Raddr>\n\
       snxb <Rsrc>, <Rdest>   : sign extend <Rsrc> into <Rdest>\n\
       zrxb <Rsrc>, <Rdest>   : zero extend <Rsrc> into <Rdest>\n\
