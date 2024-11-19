@@ -55,14 +55,16 @@ void* popStack(Stack* stack) {
     Node* head = stack->head;
     if (head == NULL) {return NULL;}
     void* dataptr = head->dataptr;
-
     // pop the node
     (stack->size)--;
     if (head->next != NULL) {
         head->next->prev = NULL;
     }
     stack->head = head->next;
-    if (stack->size == 0) {stack->tail = NULL;}
+    if (stack->size == 0) {
+        stack->tail = NULL;
+        stack->head = NULL;
+    }
     free(head);
 
     // return the data

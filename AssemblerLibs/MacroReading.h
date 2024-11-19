@@ -52,7 +52,7 @@ StringTable readMacros(FileHandle* handle, List* errorList, List* handleList, Li
         if (curPos == handle->length) {fgets(line, 256, handle->fptr);}
 
         // handle unmatched if blocks
-        if (feof(handle->fptr)) {
+        if (feof(handle->fptr) && incStack->size == 0) {
             while (ifStack->size > 0) {
                 PosData* ifData = popStack(ifStack);
                 char* errorStr = (char*)malloc(16 * sizeof(char));
