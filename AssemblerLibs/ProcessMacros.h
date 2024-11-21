@@ -754,9 +754,9 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
             if (!hasError) {
                 ExprErrorShort exprOut = evalShortExpr(arg, strlen(arg), vars, defines);
                 if (exprOut.errorMessage != NULL) {
-                    free(exprOut.errorMessage);
-                    char* errorStr = (char*)malloc(26 * sizeof(char));
+                    char* errorStr = (char*)malloc((30 + strlen(exprOut.errorMessage)) * sizeof(char));
                     sprintf(errorStr, "Could not parse arguments: %s", exprOut.errorMessage);
+                    free(exprOut.errorMessage);
                     ErrorData errorData = {errorStr, *lineCount, curCol + 5, strlen(line) - 5, handle};
                     appendList(errorList, &errorData, sizeof(ErrorData));
                     hasError = 1;
@@ -783,9 +783,9 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
             if (!hasError) {
                 ExprErrorShort exprOut = evalShortExpr(arg, strlen(arg), vars, defines);
                 if (exprOut.errorMessage != NULL) {
-                    free(exprOut.errorMessage);
-                    char* errorStr = (char*)malloc(26 * sizeof(char));
+                    char* errorStr = (char*)malloc((30 + strlen(exprOut.errorMessage))* sizeof(char));
                     sprintf(errorStr, "Could not parse arguments: %s", exprOut.errorMessage);
+                    free(exprOut.errorMessage);
                     ErrorData errorData = {errorStr, *lineCount, curCol + 5, strlen(line) - 5, handle};
                     appendList(errorList, &errorData, sizeof(ErrorData));
                     hasError = 1;

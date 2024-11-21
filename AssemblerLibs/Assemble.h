@@ -26,7 +26,6 @@ wordSize: addresses occupied by a 16-bit word
 isLittleEndian: if the code is little endian
 */
 void assemble(FileHandle* handle, List* errorList, List* handleList, List* segments, StringTable macroDefs, StringTable varDefs, int wordSize, char isLittleEndian) {
-
     // setup
     List* localVars = newList();
     List* macroVars = newList();
