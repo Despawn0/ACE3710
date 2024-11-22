@@ -353,6 +353,13 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
             }
             uint16_t writeVal = activeSegment->writeAddr + activeSegment->startAddr;
             setStringTableValue(varDefs, name, nameLength + 1, &writeVal, 2);
+            if (strlen(endOfVar) > 1) {
+                unsigned int i = countWhitespaceChars(endOfVar + 1, strlen(endOfVar + 1));
+                if (endOfVar[i + 1] == '.') {
+                        handle = executeType2Macro(handle, errorList, handleList, endOfVar + i + 1, strlen(endOfVar + i + 1), &lineCount, i + 1, includeStack, ifStack, segStack, macroStack, defines, &activeSegment, segments, macroDefs, instructionSize);
+                        if (handle == NULL) {break;}
+                }
+            }
             lineCount++;
             free(name);
             continue;
@@ -735,6 +742,15 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
                 sprintf(errorStr, "No active segment");
                 ErrorData errorData = {errorStr, lineCount, (endOfVar - line), 1, handle};
                 appendList(errorList, &errorData, sizeof(ErrorData));
+                uint16_t writeVal = activeSegment->writeAddr + activeSegment->startAddr;
+                setStringTableValue(varDefs, name, nameLength + 1, &writeVal, 2);
+                if (strlen(endOfVar) > 1) {
+                    unsigned int i = countWhitespaceChars(endOfVar + 1, strlen(endOfVar + 1));
+                    if (endOfVar[i + 1] == '.') {
+                            handle = executeType2Macro(handle, errorList, handleList, endOfVar + i + 1, strlen(endOfVar + i + 1), &lineCount, i + 1, includeStack, ifStack, segStack, macroStack, defines, &activeSegment, segments, macroDefs, instructionSize);
+                            if (handle == NULL) {break;}
+                    }
+                }
                 lineCount++;
                 free(name);
                 continue;

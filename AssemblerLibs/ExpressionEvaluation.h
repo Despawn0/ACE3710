@@ -429,7 +429,6 @@ ExprErrorShort evalShortExpr(char* expr, int exprLen, StringTable varTable, Stri
                     deleteStack(valStack);
                     char* errorStr = (char*)malloc((25 + charsExtracted) * sizeof(char));
                     sprintf(errorStr, "Uninitialized value \"%s\"", varName);
-                    printf("%s\n", errorStr);
                     return (ExprErrorShort){0, i, charsExtracted, errorStr};
                 }
                 pushStack(valStack, varptr, 2);

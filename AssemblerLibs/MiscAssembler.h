@@ -35,7 +35,7 @@ errorData: error to print
 */
 void printError(ErrorData errorData) {
     // calculate the formatting to the error lime
-    char errorLine[errorData.col + errorData.len];
+    char errorLine[errorData.col + errorData.len + 1];
     for (int i = 0; i < errorData.col; i++) {errorLine[i] = ' ';}
     for (int j = errorData.col; j < errorData.col + errorData.len; j++) {errorLine[j] = '^';}
     errorLine[errorData.col + errorData.len] = '\0';
