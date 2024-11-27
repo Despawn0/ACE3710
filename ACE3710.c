@@ -43,7 +43,7 @@ prints version information
 */
 void printVersion() {
     printf("  -- Assembler for CS/ECE 3710 --\n");
-    printf("    Version 1.0.11\n");
+    printf("    Version 1.0.12\n");
     printf("    Written by Adam Billings\n\n");
     printf("    Happy programming!\n\n");
 }

@@ -175,7 +175,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     }
                     deleteList(args);
                     if (hasError) {
-                        char* errorStr = (char*)malloc(26 * sizeof(char) + strlen(errorMessage1) * sizeof(char));
+                        char* errorStr = (char*)malloc(30 * sizeof(char) + strlen(errorMessage1) * sizeof(char));
                         sprintf(errorStr, "Could not parse arguments: %s", errorMessage1);
                         ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));
@@ -216,10 +216,10 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     // stitch to macroVars
                     if (macroVars->tail) {macroVars->tail->next = tempMacroVars->head;}
                     if (tempMacroVars->head) {tempMacroVars->head->prev = macroVars->tail;}
+                    if (!(macroVars->head)) {macroVars->head = tempMacroVars->head;}
                     macroVars->tail = tempMacroVars->tail;
                     macroVars->size += tempMacroVars->size;
                     free(tempMacroVars);
-
                     if (errorList->size > errorCount) {break;}
                 } else {
                     // get the instruction
@@ -255,7 +255,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
                     }
                     deleteList(args);
                     if (hasError) {
-                        char* errorStr = (char*)malloc(26 * sizeof(char) + strlen(errorMessage1) * sizeof(char));
+                        char* errorStr = (char*)malloc(30 * sizeof(char) + strlen(errorMessage1) * sizeof(char));
                         sprintf(errorStr, "Could not parse arguments: %s", errorMessage1);
                         ErrorData errorData = {errorStr, lineCount, (afterName - line), strlen(afterName), handle};
                         appendList(errorList, &errorData, sizeof(ErrorData));

@@ -126,7 +126,7 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         }
         if (hasDepError) {
             // generate circular dependency report
-            unsigned int nameLen = strlen(fileName) + 1;
+            unsigned int nameLen = strlen(fileName) + 10;
             for (Node* node = includeStack->head; node != NULL; node = node->next) {
                 nameLen += strlen(((IncludeReturnData*)(node->dataptr))->returnFile->name) + 4;
                 if (!strcmp(fileName, ((IncludeReturnData*)(node->dataptr))->returnFile->name)) {break;}

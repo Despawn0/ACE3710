@@ -233,20 +233,20 @@ char* skipIf(FileHandle* handle, List* errorList, PosData* ifData, char allowEls
             else if (!strcmp(macroName, ".endif") && ifCount == 0) {
                 (ifData->line)++;
                 ifData->col = i;
-                char* out = (char*)malloc(strlen(buffer) + sizeof(char));
+                char* out = (char*)malloc(strlen(buffer) * sizeof(char));
                 sprintf(out, "%s", buffer);
                 return out;
             } else if (!strcmp(macroName, ".endif")) {ifCount--;}
             else if ((!strcmp(macroName, ".else") || !strcmp(macroName, ".elseif") || !strcmp(macroName, ".elseifdef") || !strcmp(macroName, ".elseifndef")) && ifCount == 0 && allowElse) {
                 (ifData->line)++;
                 ifData->col = i;
-                char* out = (char*)malloc(strlen(buffer) + sizeof(char));
+                char* out = (char*)malloc(strlen(buffer) * sizeof(char));
                 sprintf(out, "%s", buffer);
                 return out;
             } else if (!strcmp(macroName, ".elseif") && ifCount == 0 && allowElse) {
                 (ifData->line)++;
                 ifData->col = i;
-                char* out = (char*)malloc(strlen(buffer) + sizeof(char));
+                char* out = (char*)malloc(strlen(buffer) * sizeof(char));
                 sprintf(out, "%s", buffer);
                 return out;
             }

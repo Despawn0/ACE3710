@@ -603,6 +603,7 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
                     if (handle == NULL) {free(macroName); break;}
                 } else {
                     free(macroName);
+                    printf("t\n");
                     break;
                 }
                 free(macroName);
