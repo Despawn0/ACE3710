@@ -101,7 +101,7 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
                 return handle;
             }
             fseek(openHandle.fptr, 0, SEEK_END);
-            fgetpos(openHandle.fptr, &(openHandle.length));
+            openHandle.length = ftell(openHandle.fptr);
             rewind(openHandle.fptr);
             appendList(handleList, &openHandle, sizeof(FileHandle));
             newHandle = (FileHandle*)indexList(handleList, -1);
@@ -114,8 +114,8 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         if (!isValidated && validateFile(newHandle, errorList)) {free(macroName); return handle;}
 
         // push to the include stack
-        fpos_t positionPreserve;
-        fgetpos(handle->fptr, &positionPreserve);
+        long positionPreserve;
+        positionPreserve = ftell(handle->fptr);
         IncludeReturnData retData = {handle, positionPreserve, *lineCount, errorList->size};
         pushStack(includeStack, &retData, sizeof(IncludeReturnData));
 
@@ -321,8 +321,8 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
 
         // define the macro
         *isInMacro = 1;
-        fpos_t pos;
-        fgetpos(handle->fptr, &pos);
+        long pos;
+        pos = ftell(handle->fptr);
         MacroDefData defData = {handle, pos, pos, *lineCount, *lineCount, macroVars};
         setStringTableValue(macroDefs, defName, strlen(defName) + 1, &defData, sizeof(MacroDefData));
         appendList(macroDeleteTracker, &(defData.vars), sizeof(List));
@@ -353,7 +353,7 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         // set the macro ending
         MacroDefData* macroData = (MacroDefData*)readStringTable(macroDefs, curMacro, strlen(curMacro) + 1);
         macroData->lines = *lineCount - macroData->line;
-        fgetpos(handle->fptr, &(macroData->end));
+        macroData->end = ftell(handle->fptr);
         free(curMacro);
     }
 
@@ -479,13 +479,13 @@ FileHandle* executeType2Macro(FileHandle* handle, List* errorList, List* handleL
         // skip the macro code
         MacroDefData* macroData = (MacroDefData*)readStringTable(macroDefs, defName, strlen(defName) + 1);
         *lineCount += macroData->lines;
-        fsetpos(handle->fptr, &(macroData->end));
+        fseek(handle->fptr, macroData->end, SEEK_SET);
     } else if (!strcmp(macroName, ".endmacro")) {
         // stack is known to not be empty
         IncludeReturnData* retData = (IncludeReturnData*)popStack(macroStack);
         FileHandle* newHandle = retData->returnFile;
         *lineCount = retData->returnLine;
-        fsetpos(newHandle->fptr, &(retData->filePosition));
+        fseek(newHandle->fptr, retData->filePosition, SEEK_SET);
         if (errorList->size > retData->errorCount) {
             char* errorStr = (char*)malloc(39 * sizeof(char));
             sprintf(errorStr, "An error occured inside the macro call");
@@ -840,7 +840,7 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
 
         // read the file
         rewind(incHandle->fptr);
-        fread((*activeSeg)->outputArr + (*activeSeg)->writeAddr, 1, incHandle->length, incHandle->fptr);
+        if (fread((*activeSeg)->outputArr + (*activeSeg)->writeAddr, 1, incHandle->length, incHandle->fptr)) {return NULL;}
         (*activeSeg)->writeAddr += incHandle->length;
         if (wordSize == 1) {
             if (!isLittleEndian && (incHandle->length % 2) == 1) {
@@ -948,7 +948,7 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
         IncludeReturnData* retData = (IncludeReturnData*)popStack(macroStack);
         FileHandle* newHandle = retData->returnFile;
         *lineCount = retData->returnLine;
-        fsetpos(newHandle->fptr, &(retData->filePosition));
+        fseek(newHandle->fptr, retData->filePosition, SEEK_SET);
         if (errorList->size > retData->errorCount) {
             char* errorStr = (char*)malloc(39 * sizeof(char));
             sprintf(errorStr, "An error occured inside the macro call");

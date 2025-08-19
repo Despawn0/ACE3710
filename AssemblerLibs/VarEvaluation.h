@@ -196,7 +196,7 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
     StringTable toEvaluateLut = newStringTable();
     List* toEvaluate = newList();
     SegmentDef* activeSegment = NULL;
-    fpos_t filePos;
+    long filePos;
     Stack* includeStack = newStack();
     Stack* ifStack = newStack();
     Stack* segStack = newStack();
@@ -225,8 +225,10 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
 
     while (1) {
         // handle new line eof
-        fgetpos(handle->fptr, &filePos);
-        if (filePos == handle->length) {fgets(line, 256, handle->fptr);}
+        filePos = ftell(handle->fptr);
+        if (filePos == handle->length) {
+            if (fgets(line, 256, handle->fptr)) {return NULL;}
+        }
 
         // handle end of return
         if (feof(handle->fptr) && includeStack->size > 0) {
@@ -238,7 +240,7 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
         // kill on eof
         if (feof(handle->fptr)) {break;}
 
-        fgets(line, 256, handle->fptr);
+        if (fgets(line, 256, handle->fptr)) {return NULL;}
 
         // handle non-var lines
         if (!isValidNameChar(line[0]) || (line[0] >= '0' && line[0] <= '9')) {
@@ -272,12 +274,12 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
 
                         // transfer position to the macro
                         IncludeReturnData retData = {handle, 0, lineCount, errorList->size};
-                        fgetpos(handle->fptr, &(retData.filePosition));
+                        retData.filePosition = ftell(handle->fptr);
                         pushStack(macroStack, &retData, sizeof(IncludeReturnData));
                         MacroDefData macroData = *(MacroDefData*)readStringTable(macroDefs, macroName, strlen(macroName) + 1);
                         handle = macroData.handle;
                         lineCount = macroData.line + 1;
-                        fsetpos(handle->fptr, &(macroData.start));
+                        fseek(handle->fptr, macroData.start, SEEK_SET);
                         continue;
                     }
                     // handle as instruction
@@ -478,21 +480,21 @@ macroStack_ macroStack to copy
 
 returns: parsed global vars
 */
-void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* segments, StringTable macroDefs, StringTable varDefs, StringTable defines, int instructionSize, List* localVars, SegmentDef* activeSeg, unsigned int lineCount, Stack* includeStack_, Stack* ifStack_, Stack* segStack_, Stack* macroStack_) {
+char readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* segments, StringTable macroDefs, StringTable varDefs, StringTable defines, int instructionSize, List* localVars, SegmentDef* activeSeg, unsigned int lineCount, Stack* includeStack_, Stack* ifStack_, Stack* segStack_, Stack* macroStack_) {
     // setup
     char line[256];
     StringTable toEvaluateLut = newStringTable();
     List* toEvaluate = newList();
     List* defUpdates = newList();
     SegmentDef* activeSegment = activeSeg;
-    fpos_t filePos;
+    long filePos;
     Stack* includeStack = newStack();
     Stack* ifStack = newStack();
     Stack* segStack = newStack();
     Stack* macroStack = newStack();
     FileHandle* retHandle = handle;
-    fpos_t retPos;
-    fgetpos(handle->fptr, &retPos);
+    long retPos;
+    retPos = ftell(handle->fptr);
 
     // copy the stacks
     for (Node* node = includeStack_->head; node != NULL; node = node->next) {
@@ -524,8 +526,10 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
     // read the current block
     while (macroStack->size >= startStackSize) {
         // handle new line eof
-        fgetpos(handle->fptr, &filePos);
-        if (filePos == handle->length) {fgets(line, 256, handle->fptr);}
+        filePos = ftell(handle->fptr);
+        if (filePos == handle->length) {
+            if (fgets(line, 256, handle->fptr)) {return 1;}
+        }
 
         // handle end of return
         if (feof(handle->fptr) && includeStack->size > 0) {
@@ -537,7 +541,7 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
         // kill on eof
         if (feof(handle->fptr)) {break;}
 
-        fgets(line, 256, handle->fptr);
+        if (fgets(line, 256, handle->fptr)) {return 1;}
 
         // handle non-var lines
         if (line[0] != '@') {
@@ -682,12 +686,12 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
                     if (readStringTable(macroDefs, macroName, strlen(macroName) + 1) != NULL) {
                         // transfer position to the macro
                         IncludeReturnData retData = {handle, 0, lineCount, errorList->size};
-                        fgetpos(handle->fptr, &(retData.filePosition));
+                        retData.filePosition = ftell(handle->fptr);
                         pushStack(macroStack, &retData, sizeof(IncludeReturnData));
                         MacroDefData macroData = *(MacroDefData*)readStringTable(macroDefs, macroName, strlen(macroName) + 1);
                         handle = macroData.handle;
                         lineCount = macroData.line + 1;
-                        fsetpos(handle->fptr, &(macroData.start));
+                        fseek(handle->fptr, macroData.start, SEEK_SET);
                         continue;
                     }
                     
@@ -848,7 +852,7 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
     }
 
     // reset reading
-    fsetpos(retHandle->fptr, &retPos);
+    fseek(retHandle->fptr, retPos, SEEK_SET);
 
     // undo defines
     for (Node* node = defUpdates->head; node != NULL; node = node->next) {
@@ -870,6 +874,7 @@ void readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
     deleteStack(includeStack);
     deleteStack(macroStack);
     deleteStringTable(toEvaluateLut);// known to be empty
+    return 0;
 }
 
 #endif

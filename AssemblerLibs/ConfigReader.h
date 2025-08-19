@@ -75,8 +75,8 @@ returns: number of chars read
 */
 unsigned int readMemoryAttribute(FileHandle* handle, List* errorList, char* line, int curLine, int curCol, SegmentDef* segment, SegmentParseData* segmentData, StringTable nullST) {
     // read the attribute name
-    int i = countWhitespaceChars(line, strlen(line));
-    int j;
+    unsigned int i = countWhitespaceChars(line, strlen(line));
+    unsigned int j;
     for (j = i; j < strlen(line); j++) {
         if (!((line[j] >= 'a' && line[j] <= 'z') || line[j] >= 'A' && line[j] <= 'Z')) {break;}
     }
@@ -137,8 +137,8 @@ unsigned int readMemoryAttribute(FileHandle* handle, List* errorList, char* line
         segmentData->readType = 1;
 
         // get the type
-        int m = countWhitespaceChars(expr, strlen(expr));
-        int n;
+        unsigned int m = countWhitespaceChars(expr, strlen(expr));
+        unsigned int n;
         for (n = m; n < strlen(expr); n++) {
             if (!((expr[n] >= 'a' && expr[n] <= 'z') || (expr[n] >= 'A' && expr[n] <= 'Z'))) {break;}
         }
@@ -195,14 +195,14 @@ returns: memory information as segments
 */
 List* readMemory(FileHandle* handle, List* errorList, unsigned int* curLine) {
     List* parses = newList();
-    fpos_t curPos;
+    long curPos;
     StringTable nullST = newStringTable();
     char isInScope = 0;
     char hasReadHeader = 0;
     char line[256];
     while (!feof(handle->fptr)) {
         // read a line
-        fgets(line, 256, handle->fptr);
+        if (fgets(line, 256, handle->fptr)) {return NULL;}
         
         if (!hasReadHeader) {
             if (!isValidConfigEnding(line, strlen(line), 1)) {
@@ -356,8 +356,10 @@ List* readMemory(FileHandle* handle, List* errorList, unsigned int* curLine) {
         }
 
         // handle "troll" line
-        fgetpos(handle->fptr, &curPos);
-        if (!feof(handle->fptr) && curPos == handle->length) {fgets(line, 256, handle->fptr);}
+        curPos = ftell(handle->fptr);
+        if (!feof(handle->fptr) && curPos == handle->length) {
+            if (fgets(line, 256, handle->fptr)) {return NULL;}
+        }
 
         (*curLine)++;
     }
@@ -386,8 +388,8 @@ returns: number of chars read
 */
 unsigned int readSegmentAttribute(FileHandle* handle, List* errorList, char* line, int curLine, int curCol, SegmentDef* segment, SegmentParseData* segmentData, List* memoryData, StringTable nullST) {
     // read the attribute name
-    int i = countWhitespaceChars(line, strlen(line));
-    int j;
+    unsigned int i = countWhitespaceChars(line, strlen(line));
+    unsigned int j;
     for (j = i; j < strlen(line); j++) {
         if (!((line[j] >= 'a' && line[j] <= 'z') || line[j] >= 'A' && line[j] <= 'Z')) {break;}
     }
@@ -440,8 +442,8 @@ unsigned int readSegmentAttribute(FileHandle* handle, List* errorList, char* lin
         segmentData->readLoad = 1;
 
         // get the type
-        int m = countWhitespaceChars(expr, strlen(expr));
-        int n;
+        unsigned int m = countWhitespaceChars(expr, strlen(expr));
+        unsigned int n;
         for (n = m; n < strlen(expr); n++) {
             if (isWhitespace(expr[n])) {break;}
         }
@@ -483,8 +485,8 @@ unsigned int readSegmentAttribute(FileHandle* handle, List* errorList, char* lin
         segmentData->readFill = 1;
 
         // get the type
-        int m = countWhitespaceChars(expr, strlen(expr));
-        int n;
+        unsigned int m = countWhitespaceChars(expr, strlen(expr));
+        unsigned int n;
         for (n = m; n < strlen(expr); n++) {
             if (!((expr[n] >= 'a' && expr[n] <= 'z') || (expr[n] >= 'A' && expr[n] <= 'Z'))) {break;}
         }
@@ -544,14 +546,14 @@ returns: memory information as segments
 */
 List* readSegment(FileHandle* handle, List* errorList, List* memoryList, unsigned int* curLine) {
     List* parses = newList();
-    fpos_t curPos;
+    long curPos;
     StringTable nullST = newStringTable();
     char isInScope = 0;
     char hasReadHeader = 0;
     char line[256];
     while (!feof(handle->fptr)) {
         // read a line
-        fgets(line, 256, handle->fptr);
+        if (fgets(line, 256, handle->fptr)) {return NULL;}
 
         if (!hasReadHeader) {
             if (!isValidConfigEnding(line, strlen(line), 1)) {
@@ -692,8 +694,10 @@ List* readSegment(FileHandle* handle, List* errorList, List* memoryList, unsigne
         }
 
         // handle "troll" line
-        fgetpos(handle->fptr, &curPos);
-        if (curPos == handle->length) {fgets(line, 256, handle->fptr);}
+        curPos = ftell(handle->fptr);
+        if (curPos == handle->length) {
+            if (fgets(line, 256, handle->fptr)) {return NULL;}
+        }
 
         (*curLine)++;
     }
@@ -729,7 +733,7 @@ List* readConfigFile(FileHandle* handle, List* errorList) {
     while (!feof(handle->fptr)) {
         char buffer[256];
 
-        fgets(buffer, 256, handle->fptr);
+        if (fgets(buffer, 256, handle->fptr)) {return NULL;}
         if (!isValidConfigEnding(buffer, strlen(buffer), 1)) {
             char* errorStr = (char*)malloc(28 * sizeof(char));
             sprintf(errorStr, "Unexpected trailing garbage");

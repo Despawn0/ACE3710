@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
                 return -2;
             }
             fseek(cfgHandle.fptr, 0, SEEK_END);
-            fgetpos(cfgHandle.fptr, &(cfgHandle.length));
+            cfgHandle.length = ftell(cfgHandle.fptr);
             rewind(cfgHandle.fptr);
             List* errorList = newList();
             validateFile(&cfgHandle, errorList);
@@ -382,7 +382,7 @@ int main(int argc, char* argv[]) {
                             return -2;
                         }
                         fseek(cfgHandle.fptr, 0, SEEK_END);
-                        fgetpos(cfgHandle.fptr, &(cfgHandle.length));
+                        cfgHandle.length = ftell(cfgHandle.fptr);
                         rewind(cfgHandle.fptr);
                         List* errorList = newList();
                         validateFile(&cfgHandle, errorList);
@@ -610,7 +610,7 @@ int main(int argc, char* argv[]) {
     if (mainFileHandle.fptr != NULL) {
         // get the file size
         fseek(mainFileHandle.fptr, 0, SEEK_END);
-        fgetpos(mainFileHandle.fptr, &(mainFileHandle.length));
+        mainFileHandle.length = ftell(mainFileHandle.fptr);
         rewind(mainFileHandle.fptr);
         appendList(handles, &mainFileHandle, sizeof(FileHandle));
 
@@ -631,7 +631,7 @@ int main(int argc, char* argv[]) {
             if (output == NULL) {
                 printf("\e[1,31mERROR:\e[0m could not open output file\n\n");
             } else {
-                fpos_t pos = 0;
+                long pos = 0;
                 for (Node* node = segments->head; node != NULL; node = node->next) {
                     SegmentDef* seg = (SegmentDef*)(node->dataptr);
                     if (seg->align > 1) {

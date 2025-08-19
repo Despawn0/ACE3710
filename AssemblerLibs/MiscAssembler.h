@@ -15,7 +15,7 @@ Written by Adam Billings
 typedef struct FileHandle {
     FILE* fptr;
     char* name;
-    fpos_t length;
+    long length;
     char isBin;
 } FileHandle;
 
@@ -33,7 +33,7 @@ prints an error message
 
 errorData: error to print
 */
-void printError(ErrorData errorData) {
+char printError(ErrorData errorData) {
     // calculate the formatting to the error lime
     char errorLine[errorData.col + errorData.len + 1];
     for (int i = 0; i < errorData.col; i++) {errorLine[i] = ' ';}
@@ -49,16 +49,16 @@ void printError(ErrorData errorData) {
     }
 
     // get the line
-    fpos_t restorePoint;
+    long restorePoint;
     char lineBuffer[257];
-    fgetpos(errorData.handle->fptr, &restorePoint);
+    restorePoint = ftell(errorData.handle->fptr);
     rewind(errorData.handle->fptr);
     for (int i = 0; i < errorData.line; i++) {
-        fgets(lineBuffer, 257, errorData.handle->fptr);
-        while (strlen(lineBuffer) > 255) {fgets(lineBuffer, 257, errorData.handle->fptr);}
+        if (fgets(lineBuffer, 257, errorData.handle->fptr)) {return 1;}
+        while (strlen(lineBuffer) > 255) {if (fgets(lineBuffer, 257, errorData.handle->fptr)){return 1;}}
     }
-    fgets(lineBuffer, 256, errorData.handle->fptr);
-    fsetpos(errorData.handle->fptr, &restorePoint);
+    if (fgets(lineBuffer, 256, errorData.handle->fptr)) {return 1;}
+    fseek(errorData.handle->fptr, restorePoint, SEEK_SET);
 
     // delete trailing newline
     int lineSize = strlen(lineBuffer);
@@ -76,6 +76,7 @@ void printError(ErrorData errorData) {
     printf("  %d |\t%s\n", errorData.line + 1, lineBuffer);
     printf("  %s |\t\e[31m%s\e[0m\n", digitCounter, errorLine);
     printf("  %s |\t\e[31m%s\e[0m\n\n", digitCounter, errorData.errorMsg);
+    return 0;
 }
 
 /*
@@ -97,7 +98,7 @@ c: charater to evaluate
 returns: if the character is whitespace
 */
 char isWhitespace(char c) {
-    return isspace(c);
+    return (char)isspace(c);
 }
 
 /*
@@ -153,13 +154,13 @@ char validateFile(FileHandle* handle, List* errorList) {
     unsigned int lineCounter = 0;
 
     // start from the file start
-    fpos_t posPreserve;
-    fgetpos(handle->fptr, &posPreserve);
+    long posPreserve;
+    posPreserve = ftell(handle->fptr);
     rewind(handle->fptr);
     
     // read all lines
     while (!feof(handle->fptr)) {
-        fgets(buffer, 257, handle->fptr);
+        if (fgets(buffer, 257, handle->fptr)) {return 2;}
         int len = strlen(buffer);
         if (len > 255) {
             hasError = 1;
@@ -169,13 +170,13 @@ char validateFile(FileHandle* handle, List* errorList) {
             appendList(errorList, &errorData, sizeof(errorData));
         }
         while (!feof(handle->fptr) && strlen(buffer) > 255) {
-            fgets(buffer, 257, handle->fptr);
+            if (fgets(buffer, 257, handle->fptr)) {return 2;}
         }
         lineCounter++;
     }
 
     // cleanup and return
-    fsetpos(handle->fptr, &posPreserve);
+    fseek(handle->fptr, posPreserve, SEEK_SET);
     return hasError;
 }
 

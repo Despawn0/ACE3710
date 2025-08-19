@@ -17,8 +17,8 @@ Written by Adam Billings
 // information needed to find a macro
 typedef struct MacroDefData {
     FileHandle* handle;
-    fpos_t start;
-    fpos_t end;
+    long start;
+    long end;
     unsigned int line;
     unsigned int lines;
     List* vars;
@@ -33,7 +33,7 @@ typedef struct PosData {
 // information needed to track include nesting
 typedef struct IncludeReturnData {
     FileHandle* returnFile;
-    fpos_t filePosition;
+    long filePosition;
     unsigned int returnLine;
     unsigned int errorCount;
 } IncludeReturnData;
@@ -213,7 +213,7 @@ char* skipIf(FileHandle* handle, List* errorList, PosData* ifData, char allowEls
     // read to .endif
     while (!feof(handle->fptr)) {
         // get the next line
-        fgets(buffer, 256, handle->fptr);
+        if (fgets(buffer, 256, handle->fptr)) {return NULL;}
         
         // skip spaces
         int i;
@@ -233,20 +233,20 @@ char* skipIf(FileHandle* handle, List* errorList, PosData* ifData, char allowEls
             else if (!strcmp(macroName, ".endif") && ifCount == 0) {
                 (ifData->line)++;
                 ifData->col = i;
-                char* out = (char*)malloc(strlen(buffer) * sizeof(char));
+                char* out = (char*)malloc((1 + strlen(buffer)) * sizeof(char));
                 sprintf(out, "%s", buffer);
                 return out;
             } else if (!strcmp(macroName, ".endif")) {ifCount--;}
             else if ((!strcmp(macroName, ".else") || !strcmp(macroName, ".elseif") || !strcmp(macroName, ".elseifdef") || !strcmp(macroName, ".elseifndef")) && ifCount == 0 && allowElse) {
                 (ifData->line)++;
                 ifData->col = i;
-                char* out = (char*)malloc(strlen(buffer) * sizeof(char));
+                char* out = (char*)malloc((1 + strlen(buffer)) * sizeof(char));
                 sprintf(out, "%s", buffer);
                 return out;
             } else if (!strcmp(macroName, ".elseif") && ifCount == 0 && allowElse) {
                 (ifData->line)++;
                 ifData->col = i;
-                char* out = (char*)malloc(strlen(buffer) * sizeof(char));
+                char* out = (char*)malloc((1 + strlen(buffer)) * sizeof(char));
                 sprintf(out, "%s", buffer);
                 return out;
             }
@@ -280,7 +280,7 @@ FileHandle* includeReturn(Stack* includeStack, unsigned int* lineptr) {
 
     // restore the handle
     FileHandle* handle = retData->returnFile;
-    fsetpos(handle->fptr, &(retData->filePosition));
+    fseek(handle->fptr, retData->filePosition, SEEK_SET);
     return handle;
 }
 

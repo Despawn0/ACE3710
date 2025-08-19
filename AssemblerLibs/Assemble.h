@@ -25,13 +25,13 @@ varDefs: defined vars
 wordSize: addresses occupied by a 16-bit word
 isLittleEndian: if the code is little endian
 */
-void assemble(FileHandle* handle, List* errorList, List* handleList, List* segments, StringTable macroDefs, StringTable varDefs, int wordSize, char isLittleEndian) {
+char assemble(FileHandle* handle, List* errorList, List* handleList, List* segments, StringTable macroDefs, StringTable varDefs, int wordSize, char isLittleEndian) {
     // setup
     List* localVars = newList();
     List* macroVars = newList();
     char line[256];
     unsigned int lineCount = 0;
-    fpos_t filePos;
+    long filePos;
     SegmentDef* activeSeg = NULL;
     Stack* includeStack = newStack();
     Stack* ifStack = newStack();
@@ -72,13 +72,15 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
         deleteStack(macroStack);
         deleteStack(segStack);
         deleteStringTable(defines);
-        return;
+        return 0;
     }
 
     while (1) {
         // handle new line eof
-        fgetpos(handle->fptr, &filePos);
-        if (filePos == handle->length) {fgets(line, 256, handle->fptr);}
+        filePos = ftell(handle->fptr);
+        if (filePos == handle->length) {
+            if (fgets(line, 256, handle->fptr)) {return 1;}
+        }
 
         // handle end of return
         if (feof(handle->fptr) && includeStack->size > 0) {
@@ -90,7 +92,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
         // kill on eof
         if (feof(handle->fptr)) {break;}
 
-        fgets(line, 256, handle->fptr);
+        if (fgets(line, 256, handle->fptr)) {return 1;}
 
         // empty line
 
@@ -187,13 +189,13 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
 
                     // push return data
                     IncludeReturnData retData = {handle, 0, lineCount, errorList->size};
-                    fgetpos(handle->fptr, &(retData.filePosition));
+                    retData.filePosition = ftell(handle->fptr);
                     pushStack(macroStack, &retData, sizeof(IncludeReturnData));
 
                     // go to the macro
                     handle = macroData->handle;
                     lineCount = macroData->line;
-                    fsetpos(handle->fptr, &(macroData->start));
+                    fseek(handle->fptr, macroData->start, SEEK_SET);
 
                     // read in the macroVars
                     List* tempMacroVars = newList();
@@ -428,6 +430,7 @@ void assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
     deleteStack(segStack);
     deleteStringTable(defines);
     deleteStringTable(instTable);
+    return 0;
 }
 
 #endif
