@@ -6,9 +6,10 @@ All files were written by Adam Billings in 2024.
 
 # Compiling
 
-It is suggested that the assembler be compiled using the GNU C Compiler (gcc).
-To compile, run the following command (this has been tested with O2 optimizations):
-    gcc -O2 -o ace3710 ACE3710.c
+A makefile is provided for compilation.
+It is therefore assumed that the user has correctly installed makefile tools and a C compiler.
+Note that changes may need to be made to the makefile to meet the user's needs.
+The executable is compiled with the O2 flag set.
 
 Verify successful compilation by running the following:
     ./ace3710 --version

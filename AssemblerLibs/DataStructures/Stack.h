@@ -14,14 +14,14 @@ Written by Adam Billings
 typedef struct List Stack;
 
 // sample empty stack
-const Stack EMPTY_STACK = {NULL, NULL, 0};
+extern const Stack EMPTY_STACK;
 
 /*
 create an empty stack
 
 returns: empty stack
 */
-Stack* newStack() {return newList();}
+Stack* newStack();
 
 /*
 frees all memory associated with a stack
@@ -30,7 +30,7 @@ stack: stack to free
 
 returns: NULL
 */
-Stack* deleteStack(Stack* stack) {return deleteList(stack);}
+Stack* deleteStack(Stack* stack);
 
 /*
 pushes an element to a stack
@@ -39,9 +39,7 @@ stack: stack to modify
 dataptr: pointer to data
 dataSize: size of data (in bytes)
 */
-void pushStack(Stack* stack, const void* dataptr, size_t dataSize) {
-    prependList(stack, dataptr, dataSize);
-}
+void pushStack(Stack* stack, const void* dataptr, size_t dataSize);
 
 /*
 pops an element from a stack (should be freed after use)
@@ -50,26 +48,7 @@ stack: stack to pop from
 
 returns: pointer to element data
 */
-void* popStack(Stack* stack) {
-    // get the data
-    Node* head = stack->head;
-    if (head == NULL) {return NULL;}
-    void* dataptr = head->dataptr;
-    // pop the node
-    (stack->size)--;
-    if (head->next != NULL) {
-        head->next->prev = NULL;
-    }
-    stack->head = head->next;
-    if (stack->size == 0) {
-        stack->tail = NULL;
-        stack->head = NULL;
-    }
-    free(head);
-
-    // return the data
-    return dataptr;
-}
+void* popStack(Stack* stack);
 
 /*
 peek at the top element of the stack
@@ -78,9 +57,6 @@ stack: stack to peek at
 
 returns: data pointer at the top of the stack
 */
-void* peekStack(Stack* stack) {
-    if (stack->head == NULL) {return NULL;}
-    return stack->head->dataptr;
-}
+void* peekStack(Stack* stack);
 
 #endif

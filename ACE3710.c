@@ -7,14 +7,13 @@ Written by Adam Billings
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "AssemblerLibs/Help/MainHelp.h"
-#include "AssemblerLibs/MiscAssembler.h"
-#include "AssemblerLibs/DataStructures/List.h"
-#include "AssemblerLibs/ConfigReader.h"
-#include "AssemblerLibs/MacroReading.h"
-#include "AssemblerLibs/VarEvaluation.h"
-#include "AssemblerLibs/Assemble.h"
-#include "AssemblerLibs/Quotes.h"
+#include "Help/MainHelp.h"
+#include "MiscAssembler.h"
+#include "DataStructures/List.h"
+#include "ConfigReader.h"
+#include "MacroReading.h"
+#include "VarEvaluation.h"
+#include "Assemble.h"
 
 /*
 set a default configuration
@@ -56,7 +55,6 @@ int main(int argc, char* argv[]) {
     char hasEndian = 0;
     char isDefaultConfig = 1;
     char isLittleEndian = 1;
-    char hasQuote = 0;
     char isHex = 0;
     char* outputFileName = NULL;
     unsigned int wordSize = 2;
@@ -240,8 +238,7 @@ int main(int argc, char* argv[]) {
             hasEndian = 1;
             isLittleEndian = 0;
             continue;
-        } else if (!strcmp(argv[i], "--quote")) {hasQuote = 1; continue;}
-        else if (!strcmp(argv[i], "--version")) {
+        } else if (!strcmp(argv[i], "--version")) {
             // delete segments
             if (!isDefaultConfig) {
                 for (Node* node = segments->head; node != NULL; node = node->next) {
@@ -498,8 +495,7 @@ int main(int argc, char* argv[]) {
                         hasEndian = 1;
                         isLittleEndian = 0;
                         continue;
-                    } else if (argv[i][j] == 'q') {hasQuote = 1; continue;}
-                    else if (argv[i][j] == 'v') {
+                    } else if (argv[i][j] == 'v') {
                         // delete segments
                         if (!isDefaultConfig) {
                             for (Node* node = segments->head; node != NULL; node = node->next) {
@@ -774,9 +770,6 @@ int main(int argc, char* argv[]) {
 
     // fail on errors
     if (hasError) {return -1;}
-
-    // easter egg
-    if (hasQuote) {printQuote();}
 
     // return success
     return 0;

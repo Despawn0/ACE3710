@@ -1,6 +1,7 @@
 *
 !/**/
 !*.*
+!makefile
 *.exe
 *.out
 *.dat
@@ -8,3 +9,5 @@
 *.s
 *.cfg
 *.asm
+*.o
+build/*
