@@ -5,6 +5,7 @@ Written by Adam Billings
 */
 
 #include <stdio.h>
+#include <limits.h>
 #include "GeneralMacros.h"
 #include "ExpressionEvaluation.h"
 #include "DataStructures/Stack.h"
@@ -61,8 +62,8 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         char* afterString;
         unsigned int len;
         unsigned int i = countWhitespaceChars(afterName, updatedLength);
-        char* fileName = readString(afterName + i, updatedLength - i, &afterString, &len);
-        if (fileName == NULL) {
+        char* fileName_ = readString(afterName + i, updatedLength - i, &afterString, &len);
+        if (fileName_ == NULL) {
             char* errorStr = (char*)malloc(22 * sizeof(char));
             sprintf(errorStr, "Expected valid string");
             ErrorData errorData = {errorStr, *lineCount, 256 - updatedLength + curCol + i, 1, handle};
@@ -70,6 +71,20 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
             free(macroName);
             return handle;
         }
+
+        // canonicalize the file name
+        char fullPath[PATH_MAX + 1];
+        if (realpath(fileName_, fullPath) == NULL) {
+            char* errorStr = (char*)malloc(33 * sizeof(char));
+            sprintf(errorStr, "Could not canonicalize file path");
+            ErrorData errorData = {errorStr, *lineCount, 256 - updatedLength + curCol + i, 1, handle};
+            appendList(errorList, &errorData, sizeof(ErrorData));
+            free(macroName);
+            free(fileName_);
+            return handle;
+        }
+        char* fileName = malloc((strlen(fullPath) + 1) * sizeof(char));
+        strcpy(fileName, fullPath);
 
         // make sure the rest of the line is clear
         if (!isValidLineEnding(afterString, 256 - (afterString - line))) {

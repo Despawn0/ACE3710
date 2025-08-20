@@ -7,6 +7,7 @@ Written by Adam Billings
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "Help/MainHelp.h"
 #include "MiscAssembler.h"
 #include "DataStructures/List.h"
@@ -596,11 +597,28 @@ int main(int argc, char* argv[]) {
         outputFileName = "a.out";
     }
 
+    // get the file path
+    char fullPath[PATH_MAX + 1];
+    if (realpath(fileName, fullPath) == NULL) {
+        printf("\e[1;31mERROR:\e[0m Could not resolve path\n\n");
+        if (!isDefaultConfig) {
+            for (Node* node = segments->head; node != NULL; node = node->next) {
+                SegmentDef* segDef = ((SegmentDef*)(node->dataptr));
+                free(segDef->name);
+                if (segDef->outputArr != NULL) {free(segDef->outputArr);}
+            }
+        }
+        deleteList(segments);
+        return -2;
+    }
+    char* fullPathDat = malloc((strlen(fullPath) + 1) * sizeof(char));
+    strcpy(fullPathDat, fullPath);
+
     // open the file
     List* errorList = newList();
     List* handles = newList();
     List* macroDeleteTracker = newList();
-    FileHandle mainFileHandle = {fopen(fileName, "r"), fileName, 0, 0};
+    FileHandle mainFileHandle = {fopen(fullPath, "r"), fullPathDat, 0, 0};
 
     // ensure handle is valid
     if (mainFileHandle.fptr != NULL) {
