@@ -173,7 +173,7 @@ List* readMemory(FileHandle* handle, List* errorList, unsigned int* curLine) {
     char line[256];
     while (!feof(handle->fptr)) {
         // read a line
-        if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+        if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
         
         if (!hasReadHeader) {
             if (!isValidConfigEnding(line, strlen(line), 1)) {
@@ -329,7 +329,7 @@ List* readMemory(FileHandle* handle, List* errorList, unsigned int* curLine) {
         // handle "troll" line
         curPos = ftell(handle->fptr);
         if (!feof(handle->fptr) && curPos == handle->length) {
-            if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+            if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
         }
 
         (*curLine)++;
@@ -524,7 +524,7 @@ List* readSegment(FileHandle* handle, List* errorList, List* memoryList, unsigne
     char line[256];
     while (!feof(handle->fptr)) {
         // read a line
-        if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+        if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
 
         if (!hasReadHeader) {
             if (!isValidConfigEnding(line, strlen(line), 1)) {
@@ -667,7 +667,7 @@ List* readSegment(FileHandle* handle, List* errorList, List* memoryList, unsigne
         // handle "troll" line
         curPos = ftell(handle->fptr);
         if (curPos == handle->length) {
-            if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+            if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
         }
 
         (*curLine)++;
@@ -704,7 +704,7 @@ List* readConfigFile(FileHandle* handle, List* errorList) {
     while (!feof(handle->fptr)) {
         char buffer[256];
 
-        if (fgets(buffer, 256, handle->fptr) < 0) {return NULL;}
+        if (fgets(buffer, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
         if (!isValidConfigEnding(buffer, strlen(buffer), 1)) {
             char* errorStr = (char*)malloc(28 * sizeof(char));
             sprintf(errorStr, "Unexpected trailing garbage");

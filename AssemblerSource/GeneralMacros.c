@@ -187,7 +187,7 @@ char* skipIf(FileHandle* handle, List* errorList, PosData* ifData, char allowEls
     // read to .endif
     while (!feof(handle->fptr)) {
         // get the next line
-        if (fgets(buffer, 256, handle->fptr) < 0) {return NULL;}
+        if (fgets(buffer, 256, handle->fptr)== NULL && !feof(handle->fptr)) {return NULL;}
         
         // skip spaces
         int i;

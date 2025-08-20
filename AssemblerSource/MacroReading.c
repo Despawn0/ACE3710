@@ -34,7 +34,7 @@ StringTable readMacros(FileHandle* handle, List* errorList, List* handleList, Li
     // read file
     while (!feof(handle->fptr)) {
         // read a line
-        if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+        if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
 
         // ignore leading space
         int i = countWhitespaceChars(line, 256);
@@ -48,7 +48,7 @@ StringTable readMacros(FileHandle* handle, List* errorList, List* handleList, Li
         // handle "troll" line
         curPos = ftell(handle->fptr);
         if (curPos == handle->length) {
-            if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+            if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
         }
 
         // handle unmatched if blocks

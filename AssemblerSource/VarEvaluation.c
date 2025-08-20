@@ -206,7 +206,7 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
         // handle new line eof
         filePos = ftell(handle->fptr);
         if (filePos == handle->length) {
-            if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+            if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
         }
 
         // handle end of return
@@ -219,7 +219,7 @@ StringTable readGlobalVars(FileHandle* handle, List* errorList, List* handleList
         // kill on eof
         if (feof(handle->fptr)) {break;}
 
-        if (fgets(line, 256, handle->fptr) < 0) {return NULL;}
+        if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return NULL;}
 
         // handle non-var lines
         if (!isValidNameChar(line[0]) || (line[0] >= '0' && line[0] <= '9')) {
@@ -507,7 +507,7 @@ char readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
         // handle new line eof
         filePos = ftell(handle->fptr);
         if (filePos == handle->length) {
-            if (fgets(line, 256, handle->fptr) < 0) {return 1;}
+            if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return 1;}
         }
 
         // handle end of return
@@ -520,7 +520,7 @@ char readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
         // kill on eof
         if (feof(handle->fptr)) {break;}
 
-        if (fgets(line, 256, handle->fptr) < 0) {return 1;}
+        if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return 1;}
 
         // handle non-var lines
         if (line[0] != '@') {

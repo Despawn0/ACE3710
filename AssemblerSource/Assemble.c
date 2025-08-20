@@ -76,7 +76,7 @@ char assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
         // handle new line eof
         filePos = ftell(handle->fptr);
         if (filePos == handle->length) {
-            if (fgets(line, 256, handle->fptr) < 0) {return 1;}
+            if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return 1;}
         }
 
         // handle end of return
@@ -89,7 +89,7 @@ char assemble(FileHandle* handle, List* errorList, List* handleList, List* segme
         // kill on eof
         if (feof(handle->fptr)) {break;}
 
-        if (fgets(line, 256, handle->fptr) < 0) {return 1;}
+        if (fgets(line, 256, handle->fptr) == NULL && !feof(handle->fptr)) {return 1;}
 
         // empty line
 

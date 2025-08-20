@@ -35,10 +35,10 @@ char printError(ErrorData errorData) {
     restorePoint = ftell(errorData.handle->fptr);
     rewind(errorData.handle->fptr);
     for (int i = 0; i < errorData.line; i++) {
-        if (fgets(lineBuffer, 257, errorData.handle->fptr) < 0) {return 1;}
-        while (strlen(lineBuffer) > 255) {if (fgets(lineBuffer, 257, errorData.handle->fptr) < 0){return 1;}}
+        if (fgets(lineBuffer, 257, errorData.handle->fptr) == NULL && !feof(errorData.handle->fptr)) {return 1;}
+        while (strlen(lineBuffer) > 255) {if (fgets(lineBuffer, 257, errorData.handle->fptr) == NULL && !feof(errorData.handle->fptr)){return 1;}}
     }
-    if (fgets(lineBuffer, 256, errorData.handle->fptr) < 0) {return 1;}
+    if (fgets(lineBuffer, 256, errorData.handle->fptr) == NULL && !feof(errorData.handle->fptr)) {return 1;}
     fseek(errorData.handle->fptr, restorePoint, SEEK_SET);
 
     // delete trailing newline
@@ -130,7 +130,7 @@ char validateFile(FileHandle* handle, List* errorList) {
     
     // read all lines
     while (!feof(handle->fptr)) {
-        if (fgets(buffer, 257, handle->fptr) < 0) {return 2;}
+        if (fgets(buffer, 257, handle->fptr) == NULL && !feof(handle->fptr)) {return 2;}
         int len = strlen(buffer);
         if (len > 255) {
             hasError = 1;
@@ -140,7 +140,7 @@ char validateFile(FileHandle* handle, List* errorList) {
             appendList(errorList, &errorData, sizeof(errorData));
         }
         while (!feof(handle->fptr) && strlen(buffer) > 255) {
-            if (fgets(buffer, 257, handle->fptr) < 0) {return 2;}
+            if (fgets(buffer, 257, handle->fptr) == NULL && !feof(handle->fptr)) {return 2;}
         }
         lineCounter++;
     }
