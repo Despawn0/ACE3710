@@ -24,10 +24,10 @@ To access the help page, run the following:
 
 The following are provided to assist in basic assembly (note that "-q" is optional):
 ```
-    ./ace3710 -Twd INPUT_FILE_NAME -q
-    ./ace3710 -Tw -c CONFIG_FILE_NAME INPUT_FILE_NAME -q
-    ./ace3710 -Twd -o OUTPUT_FILE_NAME INPUT_FILE_NAME -q
-    ./ace3710 -Tw -c CONFIG_FILE_NAME -o OUTPUT_FILE_NAME INPUT_FILE_NAME -q
+    ./ace3710 -Twd INPUT_FILE_NAME
+    ./ace3710 -Tw -c CONFIG_FILE_NAME INPUT_FILE_NAME
+    ./ace3710 -Twd -o OUTPUT_FILE_NAME INPUT_FILE_NAME
+    ./ace3710 -Tw -c CONFIG_FILE_NAME -o OUTPUT_FILE_NAME INPUT_FILE_NAME
 ```
 
 
