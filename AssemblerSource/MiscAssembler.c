@@ -10,6 +10,23 @@ Written by Adam Billings
 #include "MiscAssembler.h"
 
 /*
+gets the directory a file is stored in from the canonical path
+
+path: canonical file path
+returns: directory
+*/
+char* getDir(char* path) {
+    int len;
+    for (len = strlen(path) - 1; len >= 0; len--) {
+        if (path[len] == '\\' || path[len] == '/') {break;}
+    }
+    char* dir = malloc((len + 1) * sizeof(char));
+    strncpy(dir, path, len);
+    dir[len] = '\0';
+    return dir;
+}
+
+/*
 prints an error message
 
 errorData: error to print

@@ -6,6 +6,7 @@ Written by Adam Billings
 
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "MiscAssembler.h"
 #include "ExpressionEvaluation.h"
 #include "DataStructures/StringTable.h"
@@ -252,9 +253,18 @@ FileHandle* includeReturn(Stack* includeStack, unsigned int* lineptr) {
     // set the new line number
     *lineptr = retData->returnLine;
 
+    // reset the context
+    char* dir = getDir(retData->returnFile->name);
+    if (chdir(dir)) {
+        printf("An internal error has occurred\n");
+        abort();
+    }
+    free(dir);
+
     // restore the handle
     FileHandle* handle = retData->returnFile;
     fseek(handle->fptr, retData->filePosition, SEEK_SET);
+    free(retData);
     return handle;
 }
 

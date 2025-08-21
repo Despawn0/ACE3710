@@ -5,6 +5,7 @@ Written by Adam Billings
 */
 
 #include <stdio.h>
+#include <unistd.h>
 #include "ExpressionEvaluation.h"
 #include "DataStructures/List.h"
 #include "DataStructures/StringTable.h"
@@ -831,6 +832,12 @@ char readLocalVars(FileHandle* handle, List* errorList, List* handleList, List* 
     }
 
     // reset reading
+    char* dir = getDir(retHandle->name);
+    if (chdir(dir)) {
+        printf("An internal error has occurred\n");
+        abort();
+    }
+    free(dir);
     fseek(retHandle->fptr, retPos, SEEK_SET);
 
     // undo defines

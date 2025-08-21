@@ -5,6 +5,7 @@ Written by Adam Billings
 */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <limits.h>
 #include "GeneralMacros.h"
 #include "ExpressionEvaluation.h"
@@ -83,6 +84,7 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
             free(fileName_);
             return handle;
         }
+        free(fileName_);
         char* fileName = malloc((strlen(fullPath) + 1) * sizeof(char));
         strcpy(fileName, fullPath);
 
@@ -103,14 +105,17 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         if (newHandle == NULL) {
             // open a new file
             isValidated = 0;
-            FileHandle openHandle = {fopen(fileName, incMode ? "rb" : "r"), fileName, 0,  incMode};
+            char* fileName__ = malloc((strlen(fileName) + 1) * sizeof(char));
+            strcpy(fileName__, fileName);
+            FileHandle openHandle = {fopen(fileName__, incMode ? "rb" : "r"), fileName__, 0,  incMode};
             if (openHandle.fptr == NULL) {
-                char* errorStr = (char*)malloc(18 * sizeof(char) + strlen(fileName));
-                sprintf(errorStr, "Could not open %s", fileName);
-                ErrorData errorData = {errorStr, *lineCount, 256 - updatedLength + curCol + i, strlen(fileName) + 2, handle};
+                char* errorStr = (char*)malloc(18 * sizeof(char) + strlen(fileName__));
+                sprintf(errorStr, "Could not open %s", fileName__);
+                ErrorData errorData = {errorStr, *lineCount, 256 - updatedLength + curCol + i, strlen(fileName__) + 2, handle};
                 appendList(errorList, &errorData, sizeof(ErrorData));
                 free(macroName);
                 free(fileName);
+                free(fileName__);
                 return handle;
             }
             fseek(openHandle.fptr, 0, SEEK_END);
@@ -121,7 +126,22 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         }
 
         // stop on incbin
-        if (incMode) {free(macroName); return handle;}
+        if (incMode) {free(macroName); free(fileName); return handle;}
+
+        // set the working directory
+        char* dir = getDir(fileName);
+        if (chdir(dir)) {
+            char* errorStr = (char*)malloc(33 * sizeof(char));
+            sprintf(errorStr, "Could not canonicalize file path");
+            ErrorData errorData = {errorStr, *lineCount, 256 - updatedLength + curCol + i, 1, handle};
+            appendList(errorList, &errorData, sizeof(ErrorData));
+            free(macroName);
+            free(fileName_);
+            free(fileName);
+            free(dir);
+            return handle;
+        }
+        free(dir);
 
         // validate the file
         if (!isValidated && validateFile(newHandle, errorList)) {free(macroName); return handle;}
@@ -159,7 +179,14 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
 
             // pop the return value and return
             free(popStack(includeStack));
+            IncludeReturnData* retData = (IncludeReturnData*)peekStack(includeStack);
+            char* retDir = getDir(retData->returnFile->name);
+            if (chdir(retDir)) {
+                printf("An internal error has occurred\n");
+                abort();
+            }
             free(macroName);
+            free(fileName);
             return handle;
         }
 
@@ -168,7 +195,14 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         long endPos = ftell(newHandle->fptr);
         if (endPos == 0) {
             free(popStack(includeStack));
+            IncludeReturnData* retData = (IncludeReturnData*)peekStack(includeStack);
+            char* retDir = getDir(retData->returnFile->name);
+            if (chdir(retDir)) {
+                printf("An internal error has occurred\n");
+                abort();
+            }
             free(macroName);
+            free(fileName);
             return handle;
         }
 
@@ -176,6 +210,7 @@ FileHandle* executeType1Macro(FileHandle* handle, List* errorList, List* handleL
         rewind(newHandle->fptr);
         *lineCount = -1;
         free(macroName);
+        free(fileName);
         return newHandle;
     } else if (!strcmp(macroName, ".define") || !strcmp(macroName, ".redef")) {
         // get the name
@@ -497,6 +532,11 @@ FileHandle* executeType2Macro(FileHandle* handle, List* errorList, List* handleL
         // stack is known to not be empty
         IncludeReturnData* retData = (IncludeReturnData*)popStack(macroStack);
         FileHandle* newHandle = retData->returnFile;
+        char* dir = getDir(newHandle->name);
+        if (chdir(dir)) {
+                printf("An internal error has occurred\n");
+                abort();
+        }
         *lineCount = retData->returnLine;
         fseek(newHandle->fptr, retData->filePosition, SEEK_SET);
         if (errorList->size > retData->errorCount) {
@@ -960,6 +1000,11 @@ FileHandle* executeType3Macro(FileHandle* handle, List* errorList, List* handleL
         // stack is known to not be empty
         IncludeReturnData* retData = (IncludeReturnData*)popStack(macroStack);
         FileHandle* newHandle = retData->returnFile;
+        char* dir = getDir(newHandle->name);
+        if (chdir(dir)) {
+                printf("An internal error has occurred\n");
+                abort();
+        }
         *lineCount = retData->returnLine;
         fseek(newHandle->fptr, retData->filePosition, SEEK_SET);
         if (errorList->size > retData->errorCount) {

@@ -7,6 +7,7 @@ Written by Adam Billings
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <limits.h>
 #include "Help/MainHelp.h"
 #include "MiscAssembler.h"
@@ -613,6 +614,24 @@ int main(int argc, char* argv[]) {
     }
     char* fullPathDat = malloc((strlen(fullPath) + 1) * sizeof(char));
     strcpy(fullPathDat, fullPath);
+
+    // set the current directory
+    char* dir = getDir(fullPath);
+    int changedN = chdir(dir);
+    free(dir);
+    if (changedN) {
+        printf("\e[1;31mERROR:\e[0m Could not change to path\n\n");
+        if (!isDefaultConfig) {
+            for (Node* node = segments->head; node != NULL; node = node->next) {
+                SegmentDef* segDef = ((SegmentDef*)(node->dataptr));
+                free(segDef->name);
+                if (segDef->outputArr != NULL) {free(segDef->outputArr);}
+            }
+        }
+        deleteList(segments);
+        free(fullPathDat);
+        return -2;
+    }
 
     // open the file
     List* errorList = newList();

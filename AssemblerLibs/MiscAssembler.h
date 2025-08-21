@@ -29,6 +29,14 @@ typedef struct ErrorData {
 } ErrorData;
 
 /*
+gets the directory a file is stored in from the canonical path
+
+path: canonical file path
+returns: directory
+*/
+char* getDir(char* path);
+
+/*
 prints an error message
 
 errorData: error to print
